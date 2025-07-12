@@ -5,35 +5,38 @@
 -- 3. Select a game
 -- 4. Place a bet on the game (try <= 10$ and above 10$)
 -- 5. Check the bet wallet and leaderboard
+-- Create a fake tournament data for testing bet
+-- Use cases:
+-- 1. Use the /bet command
+-- 2. Select a tournament
+-- 3. Select a game
+-- 4. Place a bet on the game (try <= 10$ and above 10$)
+-- 5. Check the bet wallet and leaderboard
 
 -- Delete Everything
 DELETE FROM user_tournament
 WHERE
   tournament_id = 123123;
-
+DELETE FROM bet_ledger_entry
+WHERE
+  tournament_id = 123123;
+DELETE FROM bet_user_game
+WHERE
+  tournament_id = 123123;
 DELETE FROM tournament_game
 WHERE
   tournament_id = 123123;
-
+DELETE FROM bet_user_tournament
+WHERE
+  tournament_id = 123123;
+DELETE FROM bet_game
+WHERE
+  tournament_id = 123123;
 DELETE FROM tournament
 WHERE
   id = 123123;
 
-DELETE FROM bet_user_tournament
-WHERE
-  tournament_id = 123123;
 
-DELETE FROM bet_game
-WHERE
-  tournament_id = 123123;
-
-DELETE FROM bet_user_game
-WHERE
-  tournament_id = 123123;
-
-DELETE FROM bet_ledger_entry
-WHERE
-  tournament_id = 123123;
 
 -- Create a fake tournament
 INSERT INTO
@@ -55,7 +58,7 @@ VALUES
   (
     123123,
     1281020861591326803,
-    'Fake Tournament #2',
+    'Fake Team 1v1 for bet #1',
     '2025-01-01 00:00:00',
     '2025-01-10 00:00:00',
     '2027-01-31 00:00:00',
@@ -268,31 +271,28 @@ VALUES
     NULL
   );
 
--- cannot bet on that one, already over
-INSERT INTO
-  bet_game (
-    tournament_id,
-    tournament_game_id,
-    probability_user_1_win,
-    probability_user_2_win,
-    bet_distributed
-  )
+-- Add wallets
+INSERT INTO bet_user_tournament(id, tournament_id, user_id, amount)
 VALUES
-  (123123, 1015, 0.10, 0.90, 0);
+  (1, 123123, 588915156608876557, 1000),
+  (2, 123123, 357551747146842124, 1000),
+  (3, 123123, 232631945325051906, 1000),
+  (4, 123123, 488465866820812810, 1000),
+  (5, 123123, 333109962861576202, 1000),
+  (6, 123123, 261398260952858624, 1000),
+  (7, 123123, 212669889012301824, 1000),
+  (8, 123123, 557002311071694849, 1000),
+  (9, 123123, 342114709425881089, 1000),
+  (10, 123123, 97116159958081536, 1000),
+  (11, 123123, 151068544484769793, 1000),
+  (12, 123123, 1012789763679465482, 1000);
 
-INSERT INTO
-  bet_game (
-    tournament_id,
-    tournament_game_id,
-    probability_user_1_win,
-    probability_user_2_win,
-    bet_distributed
-  )
-VALUES
-  (123123, 1011, 0.25, 0.75, 0);
+-- Add some bets
 
+-- Bet on a game completed but not yet distributed
 INSERT INTO
   bet_game (
+    id,
     tournament_id,
     tournament_game_id,
     probability_user_1_win,
@@ -300,4 +300,46 @@ INSERT INTO
     bet_distributed
   )
 VALUES
-  (123123, 1010, 0.40, 0.60, 0);
+  (9000, 123123, 1015, 0.10, 0.90, 0);
+
+-- Bet on a game not completed and not yet distributed
+INSERT INTO
+  bet_game (
+    id,
+    tournament_id,
+    tournament_game_id,
+    probability_user_1_win,
+    probability_user_2_win,
+    bet_distributed
+  )
+VALUES
+  (9001, 123123, 1011, 0.25, 0.75, 0);
+
+-- Bet on a game not completed and not yet distributed
+INSERT INTO
+  bet_game (
+    id,
+    tournament_id,
+    tournament_game_id,
+    probability_user_1_win,
+    probability_user_2_win,
+    bet_distributed
+  )
+VALUES
+  (9002, 123123, 1010, 0.40, 0.60, 0);
+
+INSERT INTO 
+  bet_user_game (
+            tournament_id,
+            bet_game_id,
+            user_id,
+            amount,
+            user_id_bet_placed,
+            time_bet_placed,
+            probability_user_win_when_bet_placed,
+            bet_distributed)
+VALUES
+  (123123, 9000, 232631945325051906, 1000, 588915156608876557, '2024-12-01 00:00:00', 0.10, 0),
+  (123123, 9001, 232631945325051906, 500, 357551747146842124, '2024-12-01 00:00:00', 0.90, 0),
+  (123123, 9002, 212669889012301824, 40, 488465866820812810, '2024-12-01 00:00:00', 0.50, 0)
+;
